@@ -147,8 +147,14 @@ The complete results can be found in the following files:
 * `output/top_3_significant_variables.csv`: The three most significant variables for each company
 * `output/complete_analysis_results.png`: Visual summary of all analysis results
 
-## Conclusion
+## Recommendations for Further Analysis
 
-The StockMetrics project provides a structured approach to analyzing the relationship between stock performance and fundamental financial metrics. By implementing both correlation analysis and linear regression, it offers insights into which financial variables have the strongest influence on stock returns for the analyzed IT companies.
+To enhance this analysis, we can explore additional factors that might influence stock prices. 
+For example, my [Stock-Influence](https://github.com/mitanshu-2004/Stock-Influence) project allows users to:
 
-This analysis can help investors and financial analysts make more informed decisions by understanding which fundamental metrics are most closely tied to stock performance in the IT sector.
+* Upload their own time-series data and correlate it with historical stock performance fetched from Yahoo Finance.
+* Analyze correlations using Pearson, Spearman, and Kendall methods.
+* Visualize relationships with interactive charts and correlation matrices.
+
+This approach could help identify additional variables that influence stock prices beyond the standard financial fundamentals used in this study.
+

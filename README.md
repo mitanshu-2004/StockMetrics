@@ -1,46 +1,135 @@
-# Stock Price vs. Fundamental Variables Analysis
+# StockMetrics: Stock Price vs. Fundamental Variables Analysis
 
-This project analyzes the relationship between the stock prices of five major IT companies and a set of key fundamental financial variables. The goal is to determine which, if any, of these variables have a statistically significant impact on stock performance.
+## Project Overview
+
+StockMetrics is a comprehensive data analysis project that examines the relationship between stock prices and fundamental financial metrics for five major IT companies. The project implements correlation analysis and linear regression to identify which financial variables have a statistically significant impact on stock performance.
 
 ## Key Features
 
-*   **Correlation Analysis:** Calculates the correlation between each company's stock returns and five fundamental variables.
-*   **Linear Regression:** Performs a multiple linear regression to model the relationship between stock prices and the fundamental variables.
-*   **Statistical Significance:** Identifies the most statistically significant variables for each company using p-values.
-*   **Data Visualization:** Generates a comprehensive set of plots to visualize the results, including a correlation matrix heatmap and R-squared scores for each company.
+* **Correlation Analysis:** Calculates Pearson correlation coefficients between each company's stock returns and five fundamental variables
+* **Linear Regression:** Performs multiple linear regression using scikit-learn to model the relationship between stock prices and fundamental variables
+* **Statistical Significance:** Identifies the most statistically significant variables for each company using F-statistic p-values
+* **Data Visualization:** Generates comprehensive visualizations including correlation heatmaps, R-squared scores, and significant variable charts
 
-## Data
+## Data Sources
 
-The analysis uses data from the provided `data.xls` Excel file, which contains two sheets:
+The analysis uses data from the provided `data.xls` Excel file, which contains:
 
-*   **Sheet 1:** Daily stock prices for the five companies from 2005 to 2025.
-*   **Sheet 2:** Annual fundamental financial data, including Sales, EBITDA, and PAT.
+* **Sheet 1:** Daily stock prices for five IT companies from 2005 to 2025
+* **Sheet 2:** Annual fundamental financial data, including Sales, EBITDA, and PAT
 
 The five companies included in the analysis are:
+* Infosys Ltd.
+* Wipro Ltd.
+* HCL Technologies Ltd.
+* Tata Consultancy Services Ltd.
+* Tech Mahindra Ltd.
 
-*   Infosys Ltd.
-*   Wipro Ltd.
-*   HCL Technologies Ltd.
-*   Tata Consultancy Services Ltd.
-*   Tech Mahindra Ltd.
+## Calculated Fundamental Variables
 
-From this raw data, the following five fundamental variables are calculated:
+From the raw financial data, five key fundamental variables are calculated:
+* **Sales Growth:** Year-over-year percentage change in sales
+* **EBITDA Growth:** Year-over-year percentage change in EBITDA
+* **EBITDA Margin Change:** Change in EBITDA/Sales ratio
+* **PAT Growth:** Year-over-year percentage change in Profit After Tax
+* **PAT Margin Change:** Change in PAT/Sales ratio
 
-*   Sales Growth
-*   EBITDA Growth
-*   EBITDA Margin Change
-*   PAT Growth
-*   PAT Margin Change
+## Methodology
+
+### Data Preprocessing
+
+1. **Data Loading and Validation**
+   * Raw data loaded from Excel file with validation checks
+   * Empty dataframes and missing required columns detected
+   * Data structure validated before analysis
+
+2. **Stock Price Processing**
+   * Cleaned by removing headers and converting to numeric format
+   * Dates converted to datetime format
+   * Resampled to yearly frequency and converted to returns
+
+3. **Fundamental Variables Calculation**
+   * Five key metrics calculated as listed above
+   * Time series alignment performed between stock and fundamental data
+
+### Statistical Analysis
+
+1. **Correlation Analysis**
+   * Pearson correlation coefficients calculated between stock returns and fundamental variables
+   * Implementation using NumPy's corrcoef function
+   * Results visualized through heatmaps and summary statistics
+
+2. **Linear Regression Analysis**
+   * Implemented using scikit-learn's LinearRegression
+   * Stock returns modeled as a function of the five fundamental variables
+   * Evaluation metrics:
+     * R-squared (coefficient of determination)
+     * Mean Squared Error (MSE)
+   * Feature significance determined using F-statistics and p-values
+   * Significance threshold: α = 0.05
+
+## Libraries and Tools Used
+
+1. **Data Manipulation**
+   * pandas: Data loading, manipulation, and preprocessing
+   * numpy: Numerical operations and calculations
+
+2. **Machine Learning and Statistics**
+   * scikit-learn:
+     * LinearRegression: Regression modeling
+     * r2_score, mean_squared_error: Model evaluation
+     * f_regression: Feature significance testing
+
+3. **Visualization**
+   * matplotlib: Creating plots and charts
+   * seaborn: Enhanced visualization, particularly heatmaps
+
+4. **File Handling**
+   * os: File path operations
+   * openpyxl: Excel file reading (used by pandas)
+
+## Visualization Techniques
+
+The project generates several visualizations to help interpret the results:
+
+1. **Correlation Heatmap:** Shows the correlation between each company's stock returns and the fundamental variables
+2. **R-squared Bar Chart:** Displays the R-squared values for each company's regression model
+3. **MSE Bar Chart:** Shows the Mean Squared Error for each regression model
+4. **Significant Variables Chart:** Highlights the top 3 most statistically significant variables
+5. **Summary Statistics:** Provides an overview of key findings from the analysis
+
+All visualizations are saved in the `output` directory.
+
+## Project Structure
+
+```
+StockMetrics/
+├── README.md                         # Project documentation
+├── data.xls                          # Source data file
+├── output/                           # Analysis results
+│   ├── complete_analysis_results.png # Visualization of all results
+│   ├── complete_correlation_matrix.csv
+│   ├── complete_regression_results.csv
+│   └── top_3_significant_variables.csv
+├── run_analysis.py                   # Entry point script
+└── src/                              # Source code
+    ├── analysis/
+    │   └── analysis.py               # Core analysis functions
+    ├── constants.py                  # Project constants
+    ├── main.py                       # Main execution logic
+    └── utils/
+        └── data_loader.py            # Data loading utilities
+```
 
 ## Installation and Usage
 
 To run the analysis, you will need to have Python 3 and the following libraries installed:
 
 ```bash
-pip install pandas numpy scikit-learn matplotlib seaborn statsmodels openpyxl
+pip install pandas numpy scikit-learn matplotlib seaborn openpyxl
 ```
 
-Once the dependencies are installed, you can run the analysis by executing the following command in your terminal:
+Once the dependencies are installed, you can run the analysis by executing:
 
 ```bash
 python run_analysis.py
@@ -50,44 +139,16 @@ The script will perform the analysis and save the results in the `output` direct
 
 ## Results and Findings
 
-The analysis generated a correlation matrix and a set of linear regression models for each company. The key findings are summarized below.
+The analysis identifies which fundamental financial metrics have the strongest correlation with stock price movements and which variables are statistically significant in predicting stock returns through regression analysis.
 
-### Correlation Results
+The complete results can be found in the following files:
+* `output/complete_correlation_matrix.csv`: Full correlation matrix for all companies and variables
+* `output/complete_regression_results.csv`: Detailed regression results including coefficients and p-values
+* `output/top_3_significant_variables.csv`: The three most significant variables for each company
+* `output/complete_analysis_results.png`: Visual summary of all analysis results
 
-*   **Wipro:** Shows a strong positive correlation between stock returns and both PAT Margin Change (0.627) and EBITDA Margin Change (0.565). It also has a strong negative correlation with Sales Growth (-0.501).
-*   **TCS:** Has a moderate negative correlation with Sales Growth (-0.450) and a moderate positive correlation with PAT Margin Change (0.364).
-*   **Other Companies:** Show weaker and more mixed correlation patterns.
+## Conclusion
 
-### Regression Results
+The StockMetrics project provides a structured approach to analyzing the relationship between stock performance and fundamental financial metrics. By implementing both correlation analysis and linear regression, it offers insights into which financial variables have the strongest influence on stock returns for the analyzed IT companies.
 
-The regression analysis, using a more statistically rigorous approach with the `statsmodels` library, found that **no variables were statistically significant at the 5% level**. This suggests that, based on the available data, there is not enough evidence to conclude that these specific fundamental variables have a strong, direct impact on stock returns.
-
-This is a valuable finding in itself, as it indicates that other factors not included in this analysis may be more influential in driving stock prices.
-
-## Project Structure
-
-```
-data_analyst/
-├── src/
-│   ├── main.py                    # Main script for the analysis
-│   ├── constants.py                    # Defined stock symbols
-│   ├── analysis/
-│   │   └── analysis.py            # Functions for correlation and regression
-│   └── utils/
-│       └── data_loader.py         # Function for loading and cleaning data
-├── run_analysis.py                # Entry point to run the analysis
-├── data.xls                       # Input data file
-├── output/                        # Directory for all output files
-└── README.md                      # This file
-```
-
-## Recommendations for Further Analysis
-
-To enhance this analysis, we can explore additional factors that might influence stock prices. 
-For example, my [Stock-Influence](https://github.com/mitanshu-2004/Stock-Influence) project allows users to:
-
-* Upload their own time-series data and correlate it with historical stock performance fetched from Yahoo Finance.
-* Analyze correlations using Pearson, Spearman, and Kendall methods.
-* Visualize relationships with interactive charts and correlation matrices.
-
-This approach could help identify additional variables that influence stock prices beyond the standard financial fundamentals used in this study.
+This analysis can help investors and financial analysts make more informed decisions by understanding which fundamental metrics are most closely tied to stock performance in the IT sector.

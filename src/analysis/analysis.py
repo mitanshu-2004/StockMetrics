@@ -2,14 +2,15 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-import statsmodels.api as sm
 import os
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.feature_selection import f_regression
 from src.constants import COMPANY_STOCK_CODES, COMPANY_NAMES
 
 def _plot_correlation_heatmap(ax, df):
-    sns.heatmap(df.astype(float), annot=True, cmap='RdBu_r', center=0,
-                fmt='.3f', ax=ax, cbar_kws={'label': 'Correlation'})
-    ax.set_title('Stock Returns vs Fundamental Variables\nCorrelation Matrix', fontweight='bold')
+    sns.heatmap(df.astype(float), annot=True, cmap='RdBu_r', center=0, fmt='.3f', ax=ax, cbar_kws={'label': 'Correlation'})
+    ax.set_title('Stock vs Fundamentals Correlation', fontweight='bold')
     ax.set_xlabel('Fundamental Variables')
     ax.set_ylabel('Companies')
     ax.tick_params(axis='x', rotation=45)
@@ -17,54 +18,51 @@ def _plot_correlation_heatmap(ax, df):
 def _plot_r2_scores(ax, r2_scores):
     companies = list(r2_scores.keys())
     r2_values = list(r2_scores.values())
-    bars = ax.bar(companies, r2_values, color='skyblue', alpha=0.7)
-    ax.set_title('Linear Regression R² by Company', fontweight='bold')
-    ax.set_xlabel('Companies')
+    bars = ax.bar(companies, r2_values, color='#4287f5', alpha=0.8)
+    ax.set_title('R² by Company', fontweight='bold')
     ax.set_ylabel('R² Score')
     ax.tick_params(axis='x', rotation=45)
-    ax.grid(axis='y', alpha=0.3)
+    ax.grid(axis='y', alpha=0.3, linestyle='--')
+    
     for bar, r2 in zip(bars, r2_values):
         ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.01,
-                f'{r2:.3f}', ha='center', va='bottom', fontweight='bold')
+                f'{r2:.3f}', ha='center', va='bottom')
 
 def _plot_mse(ax, mse_scores):
     companies = list(mse_scores.keys())
     mse_values = list(mse_scores.values())
-    ax.bar(companies, mse_values, color='lightcoral', alpha=0.7)
-    ax.set_title('Mean Squared Error by Company', fontweight='bold')
-    ax.set_xlabel('Companies')
+    ax.bar(companies, mse_values, color='#e74c3c', alpha=0.7)
+    ax.set_title('MSE by Company', fontweight='bold')
     ax.set_ylabel('MSE')
     ax.tick_params(axis='x', rotation=45)
-    ax.grid(axis='y', alpha=0.3)
+    ax.grid(axis='y', alpha=0.3, linestyle='--')
 
 def _plot_avg_correlations(ax, corr_df):
-    avg_corrs = corr_df.mean(axis=0)
-    ax.bar(range(len(avg_corrs)), avg_corrs.values, color='lightgreen', alpha=0.7)
-    ax.set_title('Average Correlations by Variable', fontweight='bold')
-    ax.set_xlabel('Fundamental Variables')
-    ax.set_ylabel('Average Correlation')
+    avg_corrs = corr_df.mean(axis=0).sort_values(ascending=False)
+    ax.bar(range(len(avg_corrs)), avg_corrs.values, color='#2ecc71')
+    ax.set_title('Avg Correlations by Variable', fontweight='bold')
+    ax.set_ylabel('Correlation')
     ax.set_xticks(range(len(avg_corrs)))
     ax.set_xticklabels(avg_corrs.index, rotation=45, ha='right')
-    ax.grid(axis='y', alpha=0.3)
+    ax.grid(axis='y', alpha=0.3, linestyle='--')
 
 def _plot_significant_variables(ax, top_vars):
     if not top_vars:
-        ax.text(0.5, 0.5, "No significant variables found", ha='center', va='center', fontsize=12)
-        ax.set_title('Top Significant Variables', fontweight='bold')
+        ax.text(0.5, 0.5, "No significant variables found", ha='center')
+        ax.set_title('Top Variables', fontweight='bold')
         ax.axis('off')
         return
 
     var_names = [f"{v['variable']}\n({v['company']})" for v in top_vars]
     p_vals = [v['p_value'] for v in top_vars]
     
-    ax.bar(range(len(var_names)), p_vals, color='gold', alpha=0.7)
-    ax.set_title('Top 3 Most Significant Variables\n(Lower p-value = More Significant)', fontweight='bold')
-    ax.set_xlabel('Variables')
+    ax.bar(range(len(var_names)), p_vals, color='#f39c12')
+    ax.set_title('Top 3 Significant Variables', fontweight='bold')
     ax.set_ylabel('P-value')
     ax.set_xticks(range(len(var_names)))
     ax.set_xticklabels(var_names, rotation=45, ha='right')
-    ax.grid(axis='y', alpha=0.3)
-    ax.axhline(y=0.05, color='red', linestyle='--', alpha=0.7, label='p=0.05')
+    ax.grid(axis='y', alpha=0.3, linestyle='--')
+    ax.axhline(y=0.05, color='red', linestyle='--', label='p=0.05')
     ax.legend()
 
 def _plot_summary_text(ax, reg_results, top_vars, corr_df):
@@ -73,22 +71,17 @@ def _plot_summary_text(ax, reg_results, top_vars, corr_df):
     total_vars = sum(len(r['features']) for r in reg_results.values())
     significant_count = len(top_vars)
 
-    summary_text = (
-        f"ANALYSIS SUMMARY\n\n"
-        f"Companies Analyzed: {len(reg_results)}\n"
-        f"Fundamental Variables: {len(corr_df.columns)}\n\n"
-        f"Average R²: {avg_r2:.3f}\n"
-        f"Significant Variables: {significant_count}/{total_vars}\n\n"
-        f"Key Findings:\n"
-        f"• Correlation analysis completed\n"
-        f"• Linear regression models fitted\n"
-        f"• Statistical significance tested\n"
-        f"• Top variables identified"
+    summary = (
+        f"Analysis Summary\n\n"
+        f"Companies: {len(reg_results)}\n"
+        f"Variables: {len(corr_df.columns)}\n"
+        f"Avg R²: {avg_r2:.3f}\n"
+        f"Significant: {significant_count}/{total_vars}"
     )
     
-    ax.text(0.1, 0.9, summary_text, transform=ax.transAxes, 
-            fontsize=12, verticalalignment='top', fontfamily='monospace',
-            bbox=dict(boxstyle="round,pad=0.3", facecolor="lightgray", alpha=0.8))
+    ax.text(0.1, 0.9, summary, transform=ax.transAxes, 
+            fontsize=12, va='top', family='sans-serif',
+            bbox=dict(boxstyle="round", fc="whitesmoke", ec="lightgray"))
 
 def _align_data(stock_data, fund_data, company_code, company_name):
     if company_code not in stock_data.columns:
@@ -96,28 +89,28 @@ def _align_data(stock_data, fund_data, company_code, company_name):
 
     stock = stock_data[company_code].dropna()
     
-    X_list, y_vals, features = [], [], []
 
-    for metric, data in fund_data.items():
-        if company_name in data.columns:
-            fund = data[company_name].dropna()
-            
-            common_years = set(stock.index.year) & set(fund.index)
-            
-            if len(common_years) > 1:
-                s_aligned = stock[stock.index.year.isin(common_years)]
-                f_aligned = fund[fund.index.isin(common_years)]
-                
-                n = min(len(s_aligned), len(f_aligned))
-                if n > 1:
-                    X_list.append(f_aligned.iloc[:n].values)
-                    y_vals = s_aligned.iloc[:n].values
-                    features.append(metric)
+    company_fund_data = {}
+    for var_name, var_data in fund_data.items():
+        if company_name in var_data.columns:
+            company_fund_data[var_name] = var_data[company_name].dropna()
     
-    if not X_list or not isinstance(y_vals, np.ndarray):
+    if not company_fund_data:
         return None, None, None
+    
 
-    return np.column_stack(X_list), y_vals, features
+    fund_df = pd.DataFrame(company_fund_data)
+    
+
+    common_dates = set(stock.index) & set(fund_df.index)
+    if len(common_dates) < 10:
+        return None, None, None
+    
+    common_dates = sorted(common_dates)
+    aligned_stock = stock.loc[common_dates]
+    aligned_fund = fund_df.loc[common_dates]
+    
+    return aligned_fund, aligned_stock, list(fund_df.columns)
 
 def calculate_fundamental_metrics(fund_df):
     data = {}
@@ -126,24 +119,28 @@ def calculate_fundamental_metrics(fund_df):
         years = [c for c in temp.columns if isinstance(c, int)]
         pivot = temp.set_index('Company name')[years].T
         pivot = pivot.apply(pd.to_numeric, errors='coerce')
+        
+
+        pivot.index = pd.to_datetime(pivot.index.astype(str) + '-12-31')
+        
         data[field] = pivot
     
     metrics = {}
     if 'SALES' in data:
         sales = data['SALES']
-        metrics['sales_growth'] = sales.pct_change() * 100
+        metrics['sales_growth'] = sales.pct_change(fill_method='ffill') * 100
     if 'EBITDA' in data:
         ebitda = data['EBITDA']
-        metrics['ebitda_growth'] = ebitda.pct_change() * 100
+        metrics['ebitda_growth'] = ebitda.pct_change(fill_method='ffill') * 100
     if 'SALES' in data and 'EBITDA' in data:
         ebitda_margin = data['EBITDA'].div(data['SALES']) * 100
-        metrics['ebitda_margin_change'] = ebitda_margin.pct_change() * 100
+        metrics['ebitda_margin_change'] = ebitda_margin.pct_change(fill_method='ffill') * 100
     if 'PAT' in data:
         pat = data['PAT']
-        metrics['pat_growth'] = pat.pct_change() * 100
+        metrics['pat_growth'] = pat.pct_change(fill_method='ffill') * 100
     if 'SALES' in data and 'PAT' in data:
         pat_margin = data['PAT'].div(data['SALES']) * 100
-        metrics['pat_margin_change'] = pat_margin.pct_change() * 100
+        metrics['pat_margin_change'] = pat_margin.pct_change(fill_method='ffill') * 100
     
     return metrics
 
@@ -156,67 +153,96 @@ def run_correlation_analysis(stock_data, fund_metrics):
             continue
             
         for i, feature in enumerate(features):
-            corr = np.corrcoef(y, X[:, i])[0, 1]
+            corr = np.corrcoef(y, X.iloc[:, i].values)[0, 1]
             if not np.isnan(corr):
                 corr_data[company][feature] = corr
     
     return pd.DataFrame(corr_data).T
 
-def run_regression_analysis(stock_data, fund_metrics):
-    results = {}
+def run_regression_analysis(stock_returns, fund_metrics):
+    regression_results = {}
     all_significant_vars = []
     
-    for code, company in COMPANY_STOCK_CODES.items():
-        X, y, features = _align_data(stock_data, fund_metrics, code, company)
-        if X is None:
-            continue
-
-        X_const = sm.add_constant(X)
-        model = sm.OLS(y, X_const).fit()
+    for code, name in zip(COMPANY_STOCK_CODES.keys(), COMPANY_NAMES):
+        X, y, features = _align_data(stock_returns, fund_metrics, code, name)
         
-        for i, feature in enumerate(features):
-            if model.pvalues[i+1] < 0.05:
+        if X is None or y is None:
+            continue
+            
+
+        model = LinearRegression()
+        model.fit(X, y)
+        
+
+        y_pred = model.predict(X)
+        r2 = r2_score(y, y_pred)
+        mse = mean_squared_error(y, y_pred)
+        
+
+        _, p_values = f_regression(X, y)
+        
+
+        significant_vars = []
+        for i, (feature, p_val) in enumerate(zip(features, p_values)):
+            if p_val < 0.05:
+                significant_vars.append((feature, p_val))
                 all_significant_vars.append({
-                    'company': company,
+                    'company': name,
                     'variable': feature,
-                    'coefficient': model.params[i+1],
-                    'p_value': model.pvalues[i+1]
+                    'coefficient': model.coef_[i],
+                    'p_value': p_val
                 })
         
-        results[company] = {
-            'r2': model.rsquared,
-            'mse': model.mse_resid,
-            'coeffs': model.params[1:],
-            'p_values': model.pvalues[1:],
+
+        significant_vars.sort(key=lambda x: x[1])
+        
+
+        regression_results[name] = {
+            'r2': r2,
+            'mse': mse,
+            'n_obs': len(y),
             'features': features,
-            'n_obs': len(y)
+            'coefficients': model.coef_.tolist(),
+            'significant_vars': significant_vars
         }
     
+
     all_significant_vars.sort(key=lambda x: x['p_value'])
-    top_3_vars = all_significant_vars[:3]
     
-    return results, top_3_vars
+
+    top_3_vars = all_significant_vars[:3] if all_significant_vars else []
+    
+
+    top_vars_by_company = {}
+    for company, results in regression_results.items():
+        sig_vars = results['significant_vars']
+        if sig_vars:
+            top_vars_by_company[company] = [
+                (var, results['coefficients'][results['features'].index(var)], p_val)
+                for var, p_val in sig_vars[:3]
+            ]
+    
+    return regression_results, top_3_vars, top_vars_by_company
 
 def create_visualizations(corr_df, reg_results, top_vars):
-    fig, axes = plt.subplots(2, 3, figsize=(18, 12))
+    output_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'output')
+    os.makedirs(output_dir, exist_ok=True)
     
-    if not corr_df.empty:
-        _plot_correlation_heatmap(axes[0, 0], corr_df)
-        _plot_avg_correlations(axes[1, 0], corr_df)
-
-    if reg_results:
-        r2_scores = {comp: res['r2'] for comp, res in reg_results.items()}
-        _plot_r2_scores(axes[0, 1], r2_scores)
-
-        mse_scores = {comp: res['mse'] for comp, res in reg_results.items()}
-        _plot_mse(axes[0, 2], mse_scores)
-
-        _plot_significant_variables(axes[1, 1], top_vars)
-        _plot_summary_text(axes[1, 2], reg_results, top_vars, corr_df)
+    fig, axes = plt.subplots(3, 2, figsize=(18, 15))
     
-    plt.tight_layout()
+    _plot_correlation_heatmap(axes[0, 0], corr_df)
     
-    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-    output_path = os.path.join(base_dir, 'output', 'complete_analysis_results.png')
-    plt.savefig(output_path, dpi=300, bbox_inches='tight')
-    plt.show()
+    r2_scores = {comp: res['r2'] for comp, res in reg_results.items()}
+    _plot_r2_scores(axes[0, 1], r2_scores)
+    
+    mse_scores = {comp: res['mse'] for comp, res in reg_results.items()}
+    _plot_mse(axes[1, 0], mse_scores)
+    
+    _plot_avg_correlations(axes[1, 1], corr_df)
+    
+    _plot_significant_variables(axes[2, 0], top_vars)
+    
+    _plot_summary_text(axes[2, 1], reg_results, top_vars, corr_df)
+    
+    plt.savefig(os.path.join(output_dir, 'analysis_results.png'), dpi=300)
+    plt.close()

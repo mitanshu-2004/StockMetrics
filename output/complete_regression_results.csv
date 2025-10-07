@@ -1,6 +1,6 @@
 Company,R2_Score,MSE,Observations,Features
-Infosys Ltd.,0.13418866099900584,0.40374151082367615,17,"sales_growth, ebitda_growth, ebitda_margin_change, pat_growth, pat_margin_change"
-Wipro Ltd.,0.4296390441908903,0.14689957183219596,17,"sales_growth, ebitda_growth, ebitda_margin_change, pat_growth, pat_margin_change"
-HCL Technologies Ltd.,0.12151589030301779,0.49648508732771807,17,"sales_growth, ebitda_growth, ebitda_margin_change, pat_growth, pat_margin_change"
-Tata Consultancy Services Ltd.,0.33112748897728217,0.3153787337871918,17,"sales_growth, ebitda_growth, ebitda_margin_change, pat_growth, pat_margin_change"
-Tech Mahindra Ltd.,0.23052958491446385,0.7936011864918495,17,"sales_growth, ebitda_growth, ebitda_margin_change, pat_growth, pat_margin_change"
+Infosys Ltd.,0.5144499650468957,0.14650683560375163,17,"sales_growth, ebitda_growth, ebitda_margin_change, pat_growth, pat_margin_change"
+Wipro Ltd.,0.4430163404310816,0.09282329054584172,17,"sales_growth, ebitda_growth, ebitda_margin_change, pat_growth, pat_margin_change"
+HCL Technologies Ltd.,0.47607393763764616,0.19159583527052113,17,"sales_growth, ebitda_growth, ebitda_margin_change, pat_growth, pat_margin_change"
+Tata Consultancy Services Ltd.,0.24670228003864703,0.22982616698309807,17,"sales_growth, ebitda_growth, ebitda_margin_change, pat_growth, pat_margin_change"
+Tech Mahindra Ltd.,0.6453408907713432,0.23668201860778476,17,"sales_growth, ebitda_growth, ebitda_margin_change, pat_growth, pat_margin_change"

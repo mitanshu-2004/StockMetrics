@@ -70,6 +70,7 @@ This is a valuable finding in itself, as it indicates that other factors not inc
 data_analyst/
 ├── src/
 │   ├── main.py                    # Main script for the analysis
+│   ├── constants.py                    # Defined stock symbols
 │   ├── analysis/
 │   │   └── analysis.py            # Functions for correlation and regression
 │   └── utils/

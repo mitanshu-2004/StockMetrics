@@ -80,3 +80,14 @@ data_analyst/
 ├── output/                        # Directory for all output files
 └── README.md                      # This file
 ```
+
+## Recommendations for Further Analysis
+
+To enhance this analysis, we can explore additional factors that might influence stock prices. 
+For example, my [Stock-Influence](https://github.com/mitanshu-2004/Stock-Influence) project allows users to:
+
+* Upload their own time-series data and correlate it with historical stock performance fetched from Yahoo Finance.
+* Analyze correlations using Pearson, Spearman, and Kendall methods.
+* Visualize relationships with interactive charts and correlation matrices.
+
+This approach could help identify additional variables that influence stock prices beyond the standard financial fundamentals used in this study.
